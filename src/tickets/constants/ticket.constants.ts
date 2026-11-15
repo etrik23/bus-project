@@ -1,0 +1,4 @@
+export enum TICKET_STATUS {
+  ACTIVE = 'ACTIVE',
+  CANCELLED = 'CANCELLED',
+}

@@ -1,10 +1,36 @@
 import { NestFactory } from '@nestjs/core';
-import { AppModule, ObserveInstrument } from './app.module.js';
+import { AppModule } from './app.module.js';
+import { ValidationPipe } from '@nestjs/common';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
-    instrument: ObserveInstrument,
+    cors: {
+      origin: process.env.allowedOrigin,
+      credentials: true,
+    },
   });
-  await app.listen(process.env.PORT ?? 3000);
+
+  app.use(cookieParser());
+
+  const config = new DocumentBuilder()
+    .setTitle('Chihuahueños API')
+    .setDescription('API para la venta de boletos de viaje entre estados')
+    .setVersion('0.9')
+    .addBearerAuth()
+    .build();
+  const documentFactory = () => SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api', app, documentFactory);
+
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    }),
+  );
+
+  await app.listen(4000);
 }
 await bootstrap();
